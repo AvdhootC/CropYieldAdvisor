@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crop Yield Prediction</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font- awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+--primary: #4a8c42; --primary-dark: #2e5a28; --primary-light: #6fb267; --secondary: #8d9331; --accent: #e6b800; --soil: #7d5b3c; --soil-light: #a67c52; --light: #f9f9f9; --dark: #2c3e50; --text: #37474f; --wheat: #f5deb3; --corn: #f2c649;
+}
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+transition: all 0.3s ease;
+}
+body {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+background-color: #f5f7f5;
+color: var(--text);
+line-height: 1.6;
+background-image:
+linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7- 7--7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7
+-light);
+margin-top: 10px;
+
+background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+color: white;
+padding: 15px 20px;
+border: none;
+border-radius: 8px;
+cursor: pointer;
+font-size: 1.1rem;
+font-weight: 600;
+width: 100%;
+transition: all 0.4s ease;
+position: relative;
+overflow: hidden;
+box-shadow: 0 4px 15px rgba(74, 140, 66, 0.3);
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 10px;
+}
+button:hover {
+background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+transform: translateY(-3px);
+box-shadow: 0 6px 20px rgba(74, 140, 66, 0.4);
+}
+button:active {
+transform: translateY(-1px);
+box-shadow: 0 3px 10px rgba(74, 140, 66, 0.3);
+}
+button::before {
+content: "";
+position: absolute;
+top: 0;
+left: -100%;
+width: 100%;
+height: 100%;
+background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+transition: 0.5s;
+z-index: 1;
+}
+button:hover::before {
+left: 100%;
+}
+
+button i {
+font-size: 1.2rem;
+animation: bounce 2s infinite;
+}
+@keyframes bounce {
+0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+40% { transform: translateY(-5px); }
+60% { transform: translateY(-3px); }
+}
+/* Output container styling */
+.output-container {
+flex: 1;
+min-width: 300px;
+animation: fadeInRight 0.8s ease-out;
+animation-delay: 0.2s;
+opacity: 0;
+animation-fill-mode: forwards;
+}
+@keyframes fadeInRight {
+from {
+opacity: 0;
+transform: translateX(30px);
+}
+to {
+opacity: 1;
+transform: translateX(0);
+}
+}
+.result {
+background: white;
+padding: 25px;
+border-radius: 15px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+margin-bottom: 20px;
+position: relative;
+overflow: hidden;
+text-align: center;
+border-left: 6px solid var(--primary);
+border: 1px solid rgba(74, 140, 66, 0.2);
+}
+
+.result::before {
+content: "";
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 8px;
+background: linear-gradient(90deg, var(--primary-dark), var(--primary), var(--primarylight));
+}
+.result strong {
+display: block;
+font-size: 2.5rem;
+color: var(--primary);
+margin: 15px 0;
+font-weight: 700;
+position: relative;
+text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+.result strong::after {
+content: "";
+position: absolute;
+bottom: -10px;
+left: 50%;
+transform: translateX(-50%);
+width: 80px;
+height: 4px;
+background: linear-gradient(90deg, transparent, var(--primary-light), transparent);
+border-radius: 2px;
+}
+.result-icon {
+font-size: 2.5rem;
+color: var(--primary);
+margin-bottom: 15px;
+display: inline-block;
+animation: growRotate 3s ease infinite;
+}
+@keyframes growRotate {
+0% { transform: scale(1) rotate(0deg); }
+25% { transform: scale(1.1) rotate(5deg); }
+12
+50% { transform: scale(1.15) rotate(0deg); }
+75% { transform: scale(1.1) rotate(-5deg); }
+100% { transform: scale(1) rotate(0deg); }
+}
+.explanation {
+background: white;
+padding: 25px;
+border-radius: 15px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+position: relative;
+overflow: hidden;
+border: 1px solid rgba(74, 140, 66, 0.2);
+}
+.explanation::before {
+content: "";
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 8px;
+background: linear-gradient(90deg, var(--secondary), var(--primary-light));
+}
+.explanation-header {
+display: flex;
+align-items: center;
+margin-bottom: 15px;
+padding-bottom: 15px;
+border-bottom: 1px solid rgba(74, 140, 66, 0.2);
+}
+.explanation-icon {
+font-size: 1.8rem;
+color: var(--secondary);
+margin-right: 15px;
+animation: pulse 2s infinite;
+}
+.explanation-title {
+font-size: 1.4rem;
+font-weight: 600;
+color: var(--dark);
+margin: 0;
+
+}
+.explanation-content {
+color: var(--text);
+line-height: 1.7;
+font-size: 1.05rem;
+}
+.explanation h2, .explanation h3 {
+margin-top: 20px;
+margin-bottom: 10px;
+color: var(--primary-dark);
+font-size: 1.2rem;
+}
+.explanation ul {
+padding-left: 20px;
+margin: 15px 0;
+}
+.explanation li {
+margin-bottom: 8px;
+position: relative;
+list-style-type: none;
+padding-left: 25px;
+}
+.explanation li::before {
+content: "\f06c";
+font-family: "Font Awesome 6 Free";
+font-weight: 900;
+position: absolute;
+left: 0;
+top: 2px;
+color: var(--primary);
+}
+.advice {
+background: linear-gradient(135deg, rgba(232, 245, 233, 0.8), rgba(232, 245, 233, 0.6));
+border-left: 6px solid var(--primary);
+padding: 20px;
+border-radius: 8px;
+margin-top: 20px;
+position: relative;
+overflow: hidden;
+
+}
+.advice::before {
+content: "";
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0
+0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillrule='evenodd'%3E%3Cg fill='%234a8c42' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h- 2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v- 4H4v4H0v2h4v4h2v-4h4v-2H6zM6
+4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+z-index: -1;
+}
+.advice h3 {
+color: var(--primary-dark);
+margin-top: 0;
+display: flex;
+align-items: center;
+}
+.advice h3 i {
+margin-right: 10px;
+animation: pulse 2s infinite;
+;
+width: 60px;
+height: 120px;
+opacity: 0.15;
+}
+.plant-1 {
+top: 10%;
+left: 5%;
+transform: rotate(-5deg);
+}
+.plant-2 {
+top: 30%;
+right: 5%;
+transform: rotate(5deg);
+}
+.plant-3 {
+bottom: 10%;
+left: 10%;
+transform: rotate(-10deg);
+}
+.plant-stem {
+position: absolute;
+bottom: 0;
+left: 50%;
+transform: translateX(-50%);
+width: 4px;
+<li>Consider crop rotation to improve soil health</li>
+<li>Implement integrated pest management for better yields</li>
+</ul>
+</div>
+</div>
+{% endif %}
+{% else %}
+<div class="result" style="text-align: center;">
+<div class="result-icon"><i class="fas fa-chart-bar"></i></div>
+<h3>Yield Prediction</h3>
+<p>Fill out the form to get your crop yield prediction and personalized
+recommendations.</p>
+</div>
+<div class="explanation">
+<div class="explanation-header">
+<div class="explanation-icon"><i class="fas fa-info-circle"></i></div>
+<h2 class="explanation-title">How It Works</h2>
+</div>
+<div class="explanation-content">
+<p>Our advanced prediction model analyzes multiple factors to estimate your crop
+yield:</p>
+<ul>
+<li>Regional climate patterns and soil conditions</li>
+<li>Crop-specific growth requirements</li>
+<li>Weather impacts on different growth stages</li>
+<li>Effects of fertilization and irrigation practices</li>
+</ul>
+<div class="advice">
+<h3><i class="fas fa-star"></i> Benefits</h3>
+<p>Make data-driven decisions to maximize your harvest and optimize resource
+usage.</p>
+</div>
+</div>
+</div>
+{% endif %}
+</div>
+</div>
+</div>
+<div class="loading">
+<div class="loading-spinner"></div>
+</div>
+<script>
+// Show loading animation when form is submitted
+document.getElementById('prediction-form').addEventListener('submit', function() {
+document.querySelector('.loading').classList.add('active');
+});
+// Animate weather icon based on selected weather condition
+const weatherSelect = document.querySelector('select[name="Weather_Condition"]');
+const weatherIcon = document.querySelector('.weather-animation i');
+weatherSelect.addEventListener('change', function() {
+switch(this.value) {
+case 'Sunny':
+weatherIcon.className = 'fas fa-sun';
+break;
+case 'Cloudy':
+weatherIcon.className = 'fas fa-cloud';
+break;
+case 'Rainy':
+weatherIcon.className = 'fas fa-cloud-rain';
+break;
+default:
+weatherIcon.className = 'fas fa-cloud-sun';
+}
+});
+// Create animated raindrops
+function createRaindrops() {
+const rain = document.querySelector('.rain');
+for (let i = 0; i < 20; i++) {
+const drop = document.createElement('div');
+17
+drop.className = 'raindrop';
+drop.style.left = Math.random() * 100 + '%';
+drop.style.animationDelay = Math.random() * 2 + 's';
+drop.style.opacity = Math.random() * 0.3 + 0.1;
+rain.appendChild(drop);
+}
+}
+createRaindrops();
+</script>
+</body>
+</html>
